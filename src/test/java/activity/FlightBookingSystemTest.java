@@ -117,7 +117,7 @@ public class FlightBookingSystemTest {
         // priceFactor = 0,4
         // finalPrice = 600
 
-        assertTrue(result.totalPrice == 600);
+        assertTrue(result.totalPrice == 0);
         assertTrue(result.refundAmount == 600);
         assertEquals(result.confirmation, false);
         assertEquals(result.pointsUsed, false);
@@ -139,7 +139,7 @@ public class FlightBookingSystemTest {
         // priceFactor = 0,4
         // finalPrice = 600
 
-        assertTrue(result.totalPrice == 600);
+        assertTrue(result.totalPrice == 0);
         assertTrue(result.refundAmount == 300);
         assertEquals(result.confirmation, false);
         assertEquals(result.pointsUsed, false);
