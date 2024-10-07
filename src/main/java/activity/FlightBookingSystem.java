@@ -20,9 +20,16 @@ public class FlightBookingSystem {
         }
     }
 
-    public BookingResult bookFlight(int passengers, LocalDateTime bookingTime, int availableSeats,
-                                    double currentPrice, int previousSales, boolean isCancellation,
-                                    LocalDateTime departureTime, int rewardPointsAvailable) {
+    public BookingResult bookFlight(
+        int passengers,
+        LocalDateTime bookingTime,
+        int availableSeats,
+        double currentPrice,
+        int previousSales,
+        boolean isCancellation,
+        LocalDateTime departureTime,
+        int rewardPointsAvailable
+    ) {
         double finalPrice = 0;
         double refundAmount = 0;
         boolean confirmation = false;

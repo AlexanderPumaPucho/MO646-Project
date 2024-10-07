@@ -23,7 +23,12 @@ public class SmartEnergyManagementSystem {
         boolean temperatureRegulationActive;
         double totalEnergyUsed;
 
-        public EnergyManagementResult(Map<String, Boolean> deviceStatus, boolean energySavingMode, boolean temperatureRegulationActive, double totalEnergyUsed) {
+        public EnergyManagementResult(
+            Map<String, Boolean> deviceStatus,
+            boolean energySavingMode,
+            boolean temperatureRegulationActive,
+            double totalEnergyUsed
+        ) {
             this.deviceStatus = deviceStatus;
             this.energySavingMode = energySavingMode;
             this.temperatureRegulationActive = temperatureRegulationActive;
@@ -31,10 +36,17 @@ public class SmartEnergyManagementSystem {
         }
     }
 
-    public EnergyManagementResult manageEnergy(double currentPrice, double priceThreshold, Map<String, Integer> devicePriorities,
-                                               LocalDateTime currentTime, double currentTemperature, double[] desiredTemperatureRange,
-                                               double energyUsageLimit, double totalEnergyUsedToday, List<DeviceSchedule> scheduledDevices) {
-
+    public EnergyManagementResult manageEnergy(
+        double currentPrice,
+        double priceThreshold,
+        Map<String, Integer> devicePriorities,
+        LocalDateTime currentTime,
+        double currentTemperature,
+        double[] desiredTemperatureRange,
+        double energyUsageLimit,
+        double totalEnergyUsedToday,
+        List<DeviceSchedule> scheduledDevices
+    ) {
         Map<String, Boolean> deviceStatus = new HashMap<>();
         boolean energySavingMode = false;
         boolean temperatureRegulationActive = false;
