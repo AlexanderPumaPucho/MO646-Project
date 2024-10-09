@@ -12,21 +12,15 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.host.url>http://localhost:9000</sonar.host.url>
-        <sonar.login>your_sonar_login</sonar.login>
-        <sonar.projectKey>your_sonar_project_key</sonar.projectKey>
+        <sonar.host.url>http://localhost:9001</sonar.host.url>
+        <sonar.login>squ_8eabd5329ef2c755e38d7bc24400f06253366d41</sonar.login>
+        <sonar.projectKey>MO646-Activity</sonar.projectKey>
         <sonar.projectName>MO646-Activity</sonar.projectName>
         <sonar.sources>src/main/java</sonar.sources>
         <sonar.tests>src/test/java</sonar.tests>
         <sonar.java.binaries>target/classes</sonar.java.binaries>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.8.1</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -41,6 +35,11 @@
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>3.9.0.2155</version>
+            </plugin>
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.16.1</version>
             </plugin>
         </plugins>
     </build>
