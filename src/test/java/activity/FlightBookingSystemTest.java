@@ -18,6 +18,25 @@ public class FlightBookingSystemTest {
     }
 
     @Test
+    public void shouldBeAbleToBookFlightIfThereAreAvailableSeats(){
+        BookingResult result = bookingSystem.bookFlight(
+            1,
+            LocalDateTime.now(),
+            1,
+            500,
+            50,
+            false,
+            LocalDateTime.now().plusDays(5),
+            0
+        );
+
+        assertTrue(result.totalPrice == 200);
+        assertTrue(result.refundAmount == 0);
+        assertEquals(result.confirmation, true);
+        assertEquals(result.pointsUsed, false);
+    }
+
+    @Test
     public void shouldNotBeAbleToBookFlightIfThereAreNoAvailableSeats(){
         BookingResult result = bookingSystem.bookFlight(
             1,
@@ -37,6 +56,25 @@ public class FlightBookingSystemTest {
     }
 
     @Test
+    public void shouldBeAbleToBookFlightWithoutLastMinuteFee(){
+        BookingResult result = bookingSystem.bookFlight(
+            2,
+            LocalDateTime.now(),
+            100,
+            500,
+            50,
+            false,
+            LocalDateTime.now().plusHours(24),
+            0
+        );
+
+        assertTrue(result.totalPrice == 400);
+        assertTrue(result.refundAmount == 0);
+        assertEquals(result.confirmation, true);
+        assertEquals(result.pointsUsed, false);
+    }
+
+    @Test
     public void shouldBeAbleToBookFlightWithLastMinuteFee(){
         BookingResult result = bookingSystem.bookFlight(
             2,
@@ -52,6 +90,25 @@ public class FlightBookingSystemTest {
         // finalPrice = 400 + 100 de last minute fee
 
         assertTrue(result.totalPrice == 500);
+        assertTrue(result.refundAmount == 0);
+        assertEquals(result.confirmation, true);
+        assertEquals(result.pointsUsed, false);
+    }
+
+    @Test
+    public void shouldBeAbleToBookFlightWithoutGroupOfPassengersDiscount(){
+        BookingResult result = bookingSystem.bookFlight(
+            4,
+            LocalDateTime.now(),
+            100,
+            500,
+            50,
+            false,
+            LocalDateTime.now().plusHours(120),
+            0
+        );
+
+        assertTrue(result.totalPrice == 800);
         assertTrue(result.refundAmount == 0);
         assertEquals(result.confirmation, true);
         assertEquals(result.pointsUsed, false);
@@ -110,7 +167,7 @@ public class FlightBookingSystemTest {
             500,
             50,
             true,
-            LocalDateTime.now().plusHours(50),
+            LocalDateTime.now().plusHours(48),
             0
         );
 
@@ -132,7 +189,7 @@ public class FlightBookingSystemTest {
             500,
             50,
             true,
-            LocalDateTime.now().plusHours(30),
+            LocalDateTime.now().plusHours(47),
             0
         );
 
