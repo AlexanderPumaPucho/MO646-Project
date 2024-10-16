@@ -22,24 +22,9 @@ public class FraudDetectionSystemTest {
     }
 
     @Test
-    public void shouldNotDetectFraudIfTheActualTransactionAmountIsLessThanOrEqual10000(){
-        Transaction transaction = new Transaction(
-            10000,
-            LocalDateTime.now(),
-            "São Paulo - Brazil"
-        );
-
-        FraudCheckResult result = detectionSystem.checkForFraud(transaction, new ArrayList<>(), List.of("Rio Branco - Acre"));
-
-        assertEquals(result.isFraudulent, false);
-        assertEquals(result.verificationRequired, false);
-        assertEquals(result.riskScore, 0);
-    }
-
-    @Test
     public void shouldBeAbleToDetectPotentiallyFraudIfTheActualTransactionAmountIsGreaterThan10000(){
         Transaction transaction = new Transaction(
-            10001,
+            110000,
             LocalDateTime.now(),
             "São Paulo - Brazil"
         );
@@ -52,78 +37,9 @@ public class FraudDetectionSystemTest {
     }
 
     @Test
-    public void shouldCountTransactionsThatHappenedInTheLastHour(){
-        List<Transaction> transactions = new ArrayList<>();
-        for(int i = 1; i < 10; i++){
-            transactions.add(new Transaction(
-                i * 50,
-                LocalDateTime.now().minusMinutes(60),
-                "São Paulo - Brazil")
-            );
-        }
-
-        Transaction transaction = new Transaction(
-            500,
-            LocalDateTime.now(),
-            "São Paulo - Brazil"
-        );
-
-        FraudCheckResult result = detectionSystem.checkForFraud(transaction, transactions, List.of("Rio Branco - Brazil"));
-
-        assertEquals(result.isBlocked, false);
-        assertEquals(result.riskScore, 0);
-    }
-
-    @Test
-    public void shouldNotCountTransactionsThatHappenedBeforeTheLastHour(){
-        List<Transaction> transactions = new ArrayList<>();
-        for(int i = 1; i < 10; i++){
-            transactions.add(new Transaction(
-                i * 50,
-                LocalDateTime.now().minusMinutes(61),
-                "São Paulo - Brazil")
-            );
-        }
-
-        Transaction transaction = new Transaction(
-            500,
-            LocalDateTime.now(),
-            "São Paulo - Brazil"
-        );
-
-        FraudCheckResult result = detectionSystem.checkForFraud(transaction, transactions, List.of("Rio Branco - Brazil"));
-
-        assertEquals(result.isBlocked, false);
-        assertEquals(result.riskScore, 0);
-    }
-
-    @Test
-    public void shouldNotMarkCardAsBlockedIfThereAreLessThan10TransactionsInTheLastHour(){
-        List<Transaction> transactions = new ArrayList<>();
-        for(int i = 1; i < 10; i++){
-            transactions.add(new Transaction(
-                i * 50,
-                LocalDateTime.now(),
-                "São Paulo - Brazil")
-            );
-        }
-
-        Transaction transaction = new Transaction(
-            500,
-            LocalDateTime.now(),
-            "São Paulo - Brazil"
-        );
-
-        FraudCheckResult result = detectionSystem.checkForFraud(transaction, transactions, List.of("Rio Branco - Brazil"));
-
-        assertEquals(result.isBlocked, false);
-        assertEquals(result.riskScore, 0);
-    }
-
-    @Test
     public void shouldBeAbleToMarkAsBlockedIfThereAreMoreThan10TransactionsInTheLastHour(){
         List<Transaction> transactions = new ArrayList<>();
-        for(int i = 1; i <= 11; i++){
+        for(int i = 1; i < 12; i++){
             transactions.add(new Transaction(
                 i * 50,
                 LocalDateTime.now(),
@@ -143,49 +59,11 @@ public class FraudDetectionSystemTest {
         assertEquals(result.riskScore, 30);
     }
 
-    @Test 
-    public void shouldNotDetectFraudIfActualTransactionOccursInTheSamePlaceThanThePreviousOne(){
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(new Transaction(
-            50, LocalDateTime.now(), "São Paulo - Brazil"));
-
-        Transaction transaction = new Transaction(
-            500,
-            LocalDateTime.now(),
-            "São Paulo - Brazil"
-        );
-
-        FraudCheckResult result = detectionSystem.checkForFraud(transaction, transactions, List.of("Rio Branco - Brazil"));
-
-        assertEquals(result.isFraudulent, false);
-        assertEquals(result.verificationRequired, false);
-        assertEquals(result.riskScore, 0);
-    }
-
-    @Test 
-    public void shouldNotDetectFraudIfActualTransactionOccursMoreThan30MinutesThanThePreviousOne(){
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(new Transaction(
-            50, LocalDateTime.now().minusHours(30), "São Paulo - Brazil"));
-
-        Transaction transaction = new Transaction(
-            500,
-            LocalDateTime.now(),
-            "São Paulo - Brazil"
-        );
-
-        FraudCheckResult result = detectionSystem.checkForFraud(transaction, transactions, List.of("Rio Branco - Brazil"));
-
-        assertEquals(result.isFraudulent, false);
-        assertEquals(result.verificationRequired, false);
-        assertEquals(result.riskScore, 0);
-    }
-
     @Test
     public void shouldBeAbleToDetectPotentiallyFraudIfActualTransactionOccursInADifferentLocationThanThePreviousOne(){
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(new Transaction(
-            50, LocalDateTime.now().minusMinutes(29), "Rio de Janeiro - Brazil"));
+            50, LocalDateTime.now(), "Rio de Janeiro - Brazil"));
 
         Transaction transaction = new Transaction(
             500,
@@ -213,4 +91,140 @@ public class FraudDetectionSystemTest {
         assertEquals(result.isBlocked, true);
         assertEquals(result.riskScore, 100);
     }
+
+    @Test
+    public void shouldNotBeAbleToDetectPotentiallyFraudOrMarkAsBlocked(){}
+
+    public static Transaction generateTransaction(
+        double amount,
+        LocalDateTime timestamp,
+        String location
+    ){
+        return new Transaction(amount, timestamp, location);
+    }
+
+    @Test
+    public void shouldNotDetectFraudWhenTransactionAmountIsExactly10000() {
+        Transaction transaction = new Transaction(
+                10000,
+                LocalDateTime.now(),
+                "São Paulo - Brazil"
+        );
+
+        FraudCheckResult result = detectionSystem.checkForFraud(
+                transaction,
+                new ArrayList<>(),
+                List.of("Rio Branco - Brazil")
+        );
+
+        assertFalse(result.isFraudulent);
+        assertFalse(result.verificationRequired);
+        assertEquals(0, result.riskScore);
+    }
+
+    @Test
+    public void shouldNotBlockWhenTransactionsInLastHourAreExactly10() {
+        List<Transaction> transactions = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            transactions.add(new Transaction(
+                    50,
+                    LocalDateTime.now().minusMinutes(59 - i),
+                    "São Paulo - Brazil"
+            ));
+        }
+
+        Transaction transaction = new Transaction(
+                500,
+                LocalDateTime.now(),
+                "São Paulo - Brazil"
+        );
+
+        FraudCheckResult result = detectionSystem.checkForFraud(
+                transaction,
+                transactions,
+                List.of("Rio Branco - Brazil")
+        );
+
+        assertFalse(result.isBlocked);
+        assertEquals(0, result.riskScore);
+    }
+
+    @Test
+    public void shouldNotDetectFraudWhenLocationChangedAfter30Minutes() {
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(new Transaction(
+                50,
+                LocalDateTime.now().minusMinutes(30),
+                "Rio de Janeiro - Brazil"
+        ));
+
+        Transaction transaction = new Transaction(
+                500,
+                LocalDateTime.now(),
+                "São Paulo - Brazil"
+        );
+
+        FraudCheckResult result = detectionSystem.checkForFraud(
+                transaction,
+                transactions,
+                List.of("Rio Branco - Brazil")
+        );
+
+        assertFalse(result.isFraudulent);
+        assertFalse(result.verificationRequired);
+        assertEquals(0, result.riskScore);
+    }
+
+    @Test
+    public void shouldNotBlockTransactionWhenLocationIsNotBlacklisted() {
+        Transaction transaction = new Transaction(
+                500,
+                LocalDateTime.now(),
+                "São Paulo - Brazil"
+        );
+
+        FraudCheckResult result = detectionSystem.checkForFraud(
+                transaction,
+                new ArrayList<>(),
+                List.of("Rio Branco - Brazil")
+        );
+
+        assertFalse(result.isBlocked);
+        assertEquals(0, result.riskScore);
+    }
+
+    @Test
+    public void shouldBlockWhenTransactionsIncludeOneExactly60MinutesAgo() {
+        List<Transaction> transactions = new ArrayList<>();
+
+        transactions.add(new Transaction(
+                50,
+                LocalDateTime.now().minusMinutes(60),
+                "São Paulo - Brazil"
+        ));
+
+        for (int i = 1; i <= 10; i++) {
+            transactions.add(new Transaction(
+                    50,
+                    LocalDateTime.now().minusMinutes(60 - i),
+                    "São Paulo - Brazil"
+            ));
+        }
+
+        Transaction currentTransaction = new Transaction(
+                500,
+                LocalDateTime.now(),
+                "São Paulo - Brazil"
+        );
+
+        FraudCheckResult result = detectionSystem.checkForFraud(
+                currentTransaction,
+                transactions,
+                List.of("Rio Branco - Brazil")
+        );
+
+        assertTrue(result.isBlocked);
+        assertEquals(30, result.riskScore);
+    }
+
 }

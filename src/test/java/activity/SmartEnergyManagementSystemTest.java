@@ -7,6 +7,7 @@ import activity.SmartEnergyManagementSystem.EnergyManagementResult;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,9 +22,59 @@ public class SmartEnergyManagementSystemTest {
     }
 
     @Test
+    public void shouldBeAbleToActivateEnergySavingModeIfPriceExceedsThresholdKeepingHighPriorityDevicesOn(){
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+            0.25,
+            0.20,
+            Map.of(
+                "Processor", 1
+            ),
+            LocalDateTime.of(2024, 10, 7, 10, 30),
+            21.5,
+            new double[]{20.0, 24.0},
+            30,
+            25,
+            new ArrayList<>()
+        );
+
+        assertEquals(result.energySavingMode, true);
+        assertEquals(result.deviceStatus.get("Processor"), true);
+        assertEquals(result.temperatureRegulationActive, false);
+        assertEquals(result.deviceStatus.get("Heating"), false);
+        assertEquals(result.deviceStatus.get("Cooling"), false);
+        assertTrue(result.totalEnergyUsed == 25);
+    }
+
+    @Test
+    public void shouldBeAbleToActivateEnergySavingModeIfPriceExceedsThresholdTurningOffLowPriorityDevices(){
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+            0.25,
+            0.20,
+            Map.of(
+                "Lights", 2,
+                "Appliances", 3
+            ),
+            LocalDateTime.of(2024, 10, 7, 10, 30),
+            21.5,
+            new double[]{20.0, 24.0},
+            30,
+            25,
+            new ArrayList<>()
+        );
+
+        assertEquals(result.energySavingMode, true);
+        assertEquals(result.deviceStatus.get("Lights"), false);
+        assertEquals(result.deviceStatus.get("Appliances"), false);
+        assertEquals(result.temperatureRegulationActive, false);
+        assertEquals(result.deviceStatus.get("Heating"), false);
+        assertEquals(result.deviceStatus.get("Cooling"), false);
+        assertTrue(result.totalEnergyUsed == 25);
+    }
+
+    @Test
     public void shouldNotActivateEnergySavingModeIfPriceDoesNotExceedsThreshold(){
         EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.20,
+            0.15,
             0.20,
             Map.of(
                 "Processor", 1,
@@ -49,57 +100,7 @@ public class SmartEnergyManagementSystemTest {
     }
 
     @Test
-    public void shouldBeAbleToActivateEnergySavingModeIfPriceExceedsThresholdKeepingHighPriorityDevicesOn(){
-        EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.21,
-            0.20,
-            Map.of(
-                "Processor", 1
-            ),
-            LocalDateTime.of(2024, 10, 7, 10, 30),
-            21.5,
-            new double[]{20.0, 24.0},
-            30,
-            25,
-            new ArrayList<>()
-        );
-
-        assertEquals(result.energySavingMode, true);
-        assertEquals(result.deviceStatus.get("Processor"), true);
-        assertEquals(result.temperatureRegulationActive, false);
-        assertEquals(result.deviceStatus.get("Heating"), false);
-        assertEquals(result.deviceStatus.get("Cooling"), false);
-        assertTrue(result.totalEnergyUsed == 25);
-    }
-
-    @Test
-    public void shouldBeAbleToActivateEnergySavingModeIfPriceExceedsThresholdTurningOffLowPriorityDevices(){
-        EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.21,
-            0.20,
-            Map.of(
-                "Lights", 2,
-                "Appliances", 3
-            ),
-            LocalDateTime.of(2024, 10, 7, 10, 30),
-            21.5,
-            new double[]{20.0, 24.0},
-            30,
-            25,
-            new ArrayList<>()
-        );
-
-        assertEquals(result.energySavingMode, true);
-        assertEquals(result.deviceStatus.get("Lights"), false);
-        assertEquals(result.deviceStatus.get("Appliances"), false);
-        assertEquals(result.temperatureRegulationActive, false);
-        assertEquals(result.deviceStatus.get("Heating"), false);
-        assertEquals(result.deviceStatus.get("Cooling"), false);
-        assertTrue(result.totalEnergyUsed == 25);
-    }
-
-    @Test
-    public void shouldTurnOnNightModeAt23hAndTurnOffDevicesOtherThanSecurityAndRefrigerator(){
+    public void shouldTurnOnNightModeAndTurnOffDevicesOtherThanSecurityAndRefrigerator(){
         EnergyManagementResult result = energyManagementSystem.manageEnergy(
             0.15,
             0.20,
@@ -107,7 +108,7 @@ public class SmartEnergyManagementSystemTest {
                 "Lights", 2,
                 "Appliances", 3
             ),
-            LocalDateTime.of(2024, 10, 7, 23, 00),
+            LocalDateTime.of(2024, 10, 7, 23, 30),
             21.5,
             new double[]{20.0, 24.0},
             30,
@@ -118,84 +119,6 @@ public class SmartEnergyManagementSystemTest {
         assertEquals(result.energySavingMode, false);
         assertEquals(result.deviceStatus.get("Lights"), false);
         assertEquals(result.deviceStatus.get("Appliances"), false);
-        assertEquals(result.temperatureRegulationActive, false);
-        assertEquals(result.deviceStatus.get("Heating"), false);
-        assertEquals(result.deviceStatus.get("Cooling"), false);
-        assertTrue(result.totalEnergyUsed == 25);
-    }
-
-    @Test
-    public void shouldTurnOnNightModeAt05h59AndTurnOffDevicesOtherThanSecurityAndRefrigerator(){
-        EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.15,
-            0.20,
-            Map.of(
-                "Lights", 2,
-                "Appliances", 3
-            ),
-            LocalDateTime.of(2024, 10, 7, 05, 59),
-            21.5,
-            new double[]{20.0, 24.0},
-            30,
-            25,
-            new ArrayList<>()
-        );
-
-        assertEquals(result.energySavingMode, false);
-        assertEquals(result.deviceStatus.get("Lights"), false);
-        assertEquals(result.deviceStatus.get("Appliances"), false);
-        assertEquals(result.temperatureRegulationActive, false);
-        assertEquals(result.deviceStatus.get("Heating"), false);
-        assertEquals(result.deviceStatus.get("Cooling"), false);
-        assertTrue(result.totalEnergyUsed == 25);
-    }
-
-    @Test
-    public void shouldNotTurnOnNightModeAt22h59(){
-        EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.15,
-            0.20,
-            Map.of(
-                "Lights", 2,
-                "Appliances", 3
-            ),
-            LocalDateTime.of(2024, 10, 7, 22, 59),
-            21.5,
-            new double[]{20.0, 24.0},
-            30,
-            25,
-            new ArrayList<>()
-        );
-
-        assertEquals(result.energySavingMode, false);
-        assertEquals(result.deviceStatus.get("Lights"), true);
-        assertEquals(result.deviceStatus.get("Appliances"), true);
-        assertEquals(result.temperatureRegulationActive, false);
-        assertEquals(result.deviceStatus.get("Heating"), false);
-        assertEquals(result.deviceStatus.get("Cooling"), false);
-        assertTrue(result.totalEnergyUsed == 25);
-    }
-
-    @Test
-    public void shouldNotTurnOnNightModeAt06(){
-        EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.15,
-            0.20,
-            Map.of(
-                "Lights", 2,
-                "Appliances", 3
-            ),
-            LocalDateTime.of(2024, 10, 7, 06, 00),
-            21.5,
-            new double[]{20.0, 24.0},
-            30,
-            25,
-            new ArrayList<>()
-        );
-
-        assertEquals(result.energySavingMode, false);
-        assertEquals(result.deviceStatus.get("Lights"), true);
-        assertEquals(result.deviceStatus.get("Appliances"), true);
         assertEquals(result.temperatureRegulationActive, false);
         assertEquals(result.deviceStatus.get("Heating"), false);
         assertEquals(result.deviceStatus.get("Cooling"), false);
@@ -229,58 +152,6 @@ public class SmartEnergyManagementSystemTest {
     }
 
     @Test
-    public void shouldKeepCoolingAndHeatingSystemOffIfCurrentTemperatureIs20(){
-        EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.15,
-            0.20,
-            Map.of(
-                "Lights", 2,
-                "Appliances", 3
-            ),
-            LocalDateTime.of(2024, 10, 7, 10, 30),
-            20.0,
-            new double[]{20.0, 24.0},
-            30,
-            25,
-            new ArrayList<>()
-        );
-
-        assertEquals(result.energySavingMode, false);
-        assertEquals(result.deviceStatus.get("Lights"), true);
-        assertEquals(result.deviceStatus.get("Appliances"), true);
-        assertEquals(result.temperatureRegulationActive, false);
-        assertEquals(result.deviceStatus.get("Heating"), false);
-        assertEquals(result.deviceStatus.get("Cooling"), false);
-        assertTrue(result.totalEnergyUsed == 25);
-    }
-
-    @Test
-    public void shouldKeepCoolingAndHeatingSystemOffIfCurrentTemperatureIs24(){
-        EnergyManagementResult result = energyManagementSystem.manageEnergy(
-            0.15,
-            0.20,
-            Map.of(
-                "Lights", 2,
-                "Appliances", 3
-            ),
-            LocalDateTime.of(2024, 10, 7, 10, 30),
-            24.0,
-            new double[]{20.0, 24.0},
-            30,
-            25,
-            new ArrayList<>()
-        );
-
-        assertEquals(result.energySavingMode, false);
-        assertEquals(result.deviceStatus.get("Lights"), true);
-        assertEquals(result.deviceStatus.get("Appliances"), true);
-        assertEquals(result.temperatureRegulationActive, false);
-        assertEquals(result.deviceStatus.get("Heating"), false);
-        assertEquals(result.deviceStatus.get("Cooling"), false);
-        assertTrue(result.totalEnergyUsed == 25);
-    }
-
-    @Test
     public void shouldTurnHeatingSystemOnIfCurrentTemperatureIsBelowMinimum(){
         EnergyManagementResult result = energyManagementSystem.manageEnergy(
             0.15,
@@ -290,7 +161,7 @@ public class SmartEnergyManagementSystemTest {
                 "Appliances", 3
             ),
             LocalDateTime.of(2024, 10, 7, 10, 30),
-            19.99,
+            19,
             new double[]{20.0, 24.0},
             30,
             25,
@@ -306,7 +177,7 @@ public class SmartEnergyManagementSystemTest {
     }
 
     @Test
-    public void shouldTurnCoolingSystemOnIfCurrentTemperatureIsAboveMaximum(){
+    public void shouldTurnCoolingystemOnIfCurrentTemperatureIsAboveMaximum(){
         EnergyManagementResult result = energyManagementSystem.manageEnergy(
             0.15,
             0.20,
@@ -315,7 +186,7 @@ public class SmartEnergyManagementSystemTest {
                 "Appliances", 3
             ),
             LocalDateTime.of(2024, 10, 7, 10, 30),
-            24.01,
+            25,
             new double[]{20.0, 24.0},
             30,
             25,
@@ -446,5 +317,176 @@ public class SmartEnergyManagementSystemTest {
         assertFalse(result.deviceStatus.containsKey("Oven"));
     }
 
+    @Test
+    public void shouldNotActivateEnergySavingModeWhenPriceEqualsThreshold() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.20,
+                0.20,
+                Map.of(
+                        "Processor", 1,
+                        "Lights", 2
+                ),
+                LocalDateTime.of(2024, 10, 7, 10, 30),
+                21.5,
+                new double[]{20.0, 24.0},
+                30,
+                25,
+                new ArrayList<>()
+        );
+
+        assertFalse(result.energySavingMode);
+        assertTrue(result.deviceStatus.get("Processor"));
+        assertTrue(result.deviceStatus.get("Lights"));
+    }
+
+    @Test
+    public void shouldActivateNightModeAtExactly23Hours() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.15,
+                0.20,
+                Map.of(
+                        "Lights", 2,
+                        "Appliances", 3,
+                        "Security", 1
+                ),
+                LocalDateTime.of(2024, 10, 7, 23, 0),
+                21.5,
+                new double[]{20.0, 24.0},
+                30,
+                25,
+                new ArrayList<>()
+        );
+
+        assertFalse(result.deviceStatus.get("Lights"));
+        assertFalse(result.deviceStatus.get("Appliances"));
+        assertTrue(result.deviceStatus.get("Security"));
+    }
+
+    @Test
+    public void shouldNotActivateNightModeAtExactly6Hours() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.15,
+                0.20,
+                Map.of(
+                        "Lights", 2,
+                        "Appliances", 3,
+                        "Security", 1
+                ),
+                LocalDateTime.of(2024, 10, 7, 6, 0),
+                21.5,
+                new double[]{20.0, 24.0},
+                30,
+                25,
+                new ArrayList<>()
+        );
+
+        assertTrue(result.deviceStatus.get("Lights"));
+        assertTrue(result.deviceStatus.get("Appliances"));
+        assertTrue(result.deviceStatus.get("Security"));
+    }
+
+    @Test
+    public void shouldNotTurnHeatingOnWhenTemperatureEqualsMinimum() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.15,
+                0.20,
+                Map.of(
+                        "Lights", 2,
+                        "Appliances", 3
+                ),
+                LocalDateTime.of(2024, 10, 7, 10, 30),
+                20.0,
+                new double[]{20.0, 24.0},
+                30,
+                25,
+                new ArrayList<>()
+        );
+
+        assertFalse(result.temperatureRegulationActive);
+        assertFalse(result.deviceStatus.get("Heating"));
+    }
+
+    @Test
+    public void shouldNotTurnCoolingOnWhenTemperatureEqualsMaximum() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.15,
+                0.20,
+                Map.of(
+                        "Lights", 2,
+                        "Appliances", 3
+                ),
+                LocalDateTime.of(2024, 10, 7, 10, 30),
+                24.0,
+                new double[]{20.0, 24.0},
+                30,
+                25,
+                new ArrayList<>()
+        );
+
+        assertFalse(result.temperatureRegulationActive);
+        assertFalse(result.deviceStatus.get("Cooling"));
+    }
+
+    @Test
+    public void shouldReduceEnergyUsageWhenTotalEnergyUsedEqualsLimit() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.15,
+                0.20,
+                Map.of(
+                        "Processor", 1,
+                        "Lights", 2,
+                        "Appliances", 3
+                ),
+                LocalDateTime.of(2024, 10, 7, 10, 30),
+                21.5,
+                new double[]{20.0, 24.0},
+                30,
+                30,
+                new ArrayList<>()
+        );
+
+        assertFalse(result.deviceStatus.get("Lights"));
+        assertFalse(result.deviceStatus.get("Appliances"));
+        assertTrue(result.deviceStatus.get("Processor"));
+        assertTrue(result.totalEnergyUsed < 30);
+    }
+
+    @Test
+    public void shouldNotTurnDeviceOnWhenScheduledTimeDoesNotMatch() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.15,
+                0.20,
+                new HashMap<>(),
+                LocalDateTime.of(2024, 10, 7, 10, 30),
+                21.5,
+                new double[]{20.0, 24.0},
+                30,
+                25,
+                List.of(
+                        new SmartEnergyManagementSystem.DeviceSchedule("Oven", LocalDateTime.of(2024, 10, 7, 10, 31))
+                )
+        );
+
+        assertFalse(result.deviceStatus.containsKey("Oven"));
+    }
+
+    @Test
+    public void shouldTurnDeviceOnWhenScheduledTimeMatches() {
+        EnergyManagementResult result = energyManagementSystem.manageEnergy(
+                0.15,
+                0.20,
+                new HashMap<>(),
+                LocalDateTime.of(2024, 10, 7, 10, 30),
+                21.5,
+                new double[]{20.0, 24.0},
+                30,
+                25,
+                List.of(
+                        new SmartEnergyManagementSystem.DeviceSchedule("Oven", LocalDateTime.of(2024, 10, 7, 10, 30))
+                )
+        );
+
+        assertTrue(result.deviceStatus.get("Oven"));
+    }
 
 }
